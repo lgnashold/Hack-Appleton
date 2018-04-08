@@ -1,6 +1,4 @@
-var JSONobject = JSON.parse('{ "continent": {"europe":[ {"x":0, "y":5}, {"x":10, "y":10} ], "africa":[{"x":0, "y":0}, {"x":10, "y":5} ]} , "age":30, "city":"New York"}');
-
-
+var JSONobject = JSON.parse('{"Continent":{"Europe":[{"x":1.0,"y":5.0}],"Africa":[],"SouthAmerica":[],"NorthAmerica":[],"Antarctica":[],"Asia":[{"x":3.0,"y":6.0}],"Australia":[]},"Age":{"EighteenToThirty":[{"x":3.0,"y":6.0}],"ThirtyToFifty":[],"ThirteenToEighteen":[],"UnderThirteen":[{"x":1.0,"y":5.0}],"FiftyAndOlder":[]},"Gender":{"Male":[],"Female":[{"x":1.0,"y":5.0}],"Other":[{"x":3.0,"y":6.0}]}}');
 function getDataset (majorCat, minorCat) {
 	return {label: minorCat, data: JSONobject[majorCat][minorCat]};
 }
@@ -23,6 +21,5 @@ function getMinorCategorys(majorCat) {
 	return minorCats;
 }
 
-console.log(getMinorCategorys("continent"));
-console.log(getData("continent"));
+console.log(getData("Continent"));
 

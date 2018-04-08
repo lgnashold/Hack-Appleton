@@ -2,7 +2,7 @@ var ctx = document.getElementById("canvas").getContext('2d');
 var myChart = new Chart(ctx, {
     type: 'line',
     data: {  
-        datasets: getData("continent")
+        datasets: getData("Gender")
     },
     options: {
         scales: {
