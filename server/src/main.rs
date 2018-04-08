@@ -49,7 +49,29 @@ fn load_pages() -> Result<(), String> {
     Ok(())
 }
 
+use std::fs::File;
+use std::io::prelude::*;
+
+
+
 fn main() {
+    let mut file = File::open("felix.json").unwrap();
+    let mut contents = String::new();
+    file.read_to_string(&mut contents);
+    match serde_json::from_str::<Vec<BuyPost>>(&contents[..]) {
+        Ok(posts) => {
+            let purchases = posts.into_iter()
+                .map(|post| post.into_purchase())
+                .collect::<Vec<Purchase>>();
+
+            println!("{:#?}", purchases);
+        },
+        Err(err) => {
+            println!("parse error {:?}", err);
+        }
+    }
+
+    /*
     let mut data = Database::new(String::from("data.json"));
     data.add_point(Purchase {
         age: Age::UnderThirteen,
@@ -63,8 +85,9 @@ fn main() {
         continent: Continent::Asia,
         time: Moment::from_dur(time::Duration::days(3))
     });
-    println!("{} entries", data.len());
-    println!("response = {:#?}", data.form_response());
+    println!("response = {}", data.form_response_json());
+    */
+
 
     /*
     let mut plot = HashMap::new();
