@@ -64,7 +64,17 @@ fn main() {
                 .map(|post| post.into_purchase())
                 .collect::<Vec<Purchase>>();
 
-            println!("{:#?}", purchases);
+            let mut data = Database::new(String::from("data.json"));
+            data.clear();
+            for purchase in purchases {
+                data.add_point(purchase);
+            }
+
+            let response = data.form_response();
+            data.close();
+            println!("response = {:#?}", response);
+            let json = serde_json::to_string(&response).unwrap();
+            println!("{}", json);
         },
         Err(err) => {
             println!("parse error {:?}", err);
