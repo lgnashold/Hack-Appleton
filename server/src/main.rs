@@ -27,25 +27,32 @@ use std::io::prelude::*;
 mod plot;
 use plot::*;
 
+// container for the page map
 lazy_static! {
     static ref PAGES: RwLock<HashMap<String, Vec<u8>>> = RwLock::new(HashMap::new());
 }
 
+// container for the database
 lazy_static! {
     static ref DATABASE: Mutex<Database> = Mutex::new(Database::new(String::from("data.json")));
 }
 
+// function to load or readload pages
 fn load_pages() -> Result<(), String> {
+    // acquire lock
     let mut pages: RwLockWriteGuard<HashMap<String, Vec<u8>>> = PAGES.write().unwrap();
 
+    // fail if we can't find index
     match file::get("html/index.html") {
         Ok(page) => pages.insert("/".to_owned(), page),
         Err(err) => return Err(format!("fail to read index.html: {:?}", err))
     };
 
+    // walk the directory tree
     for entry in WalkDir::new("html") {
         let entry = entry.unwrap();
         if entry.file_type().is_file() {
+            // read bytes into vector
             let mut file = File::open(entry.path()).unwrap();
             let length = file.metadata().unwrap().len() as usize;
             let data: Vec<u8> = file
@@ -54,47 +61,36 @@ fn load_pages() -> Result<(), String> {
                 .map(|r: Result<u8, _>| r.unwrap())
                 .collect();
 
+            // parse url
             let path = entry.path().clone().to_str().unwrap().clone();
             let url = String::from(&path[4..]);
 
             println!("found url {}", url);
 
+            // insert into page table
             pages.insert(url, data);
         }
     }
 
-    /*
-    match file::get("html/index.html") {
-        Ok(page) => pages.insert("/".to_owned(), page),
-        Err(_) => return Err("fail to read index.html".to_owned())
-    };
-
-    for path in fs::read_dir("html").unwrap()
-        .map(|r| r.unwrap().path()) {
-        println!("reading path {:?}", path);
-
-        let str = path.clone().into_os_string().into_string().unwrap();
-        let data = file::get(&str).expect("page data read error");
-        let url = format!("/{}", path.file_name().unwrap().to_os_string().into_string().unwrap());
-        pages.insert(url, data);
-    }
-    */
-
-
     Ok(())
 }
 
+// get response from the global database
 fn get_response() -> String {
     let mut db: MutexGuard<Database> = DATABASE.lock().unwrap();
     db.form_response_json()
 }
 
+// post some purchase data
 fn post_purchase(post: String) {
+    // parse into the BuyPost struct
     match serde_json::from_str::<BuyPost>(&post[..]) {
         Ok(parsed) => {
             println!("parsed: {:?}", parsed);
             let purchase = parsed.into_purchase();
+            // acquire database lock
             let mut db: MutexGuard<Database> = DATABASE.lock().unwrap();
+            // insert to database
             db.add_point(purchase);
         },
         Err(err) => {
@@ -103,6 +99,7 @@ fn post_purchase(post: String) {
     };
 }
 
+// this tests POST parsing, database creation, and response
 fn test_felix_parse_respond() {
     let mut file = File::open("felix.json").unwrap();
     let mut contents = String::new();
@@ -131,13 +128,16 @@ fn test_felix_parse_respond() {
     }
 }
 
+// main function
 fn main() {
     //let host = "127.0.0.1";
     let host = "localhost";
     let port = "80";
 
+    // immediately load page table
     load_pages().expect("failed to load pages");
 
+    // the shell thread
     thread::spawn(move || {
         loop {
             let mut line = String::new();
@@ -159,6 +159,7 @@ fn main() {
         }
     });
 
+    // create the server in a somewhat functional manor
     let server = Server::new(|request, mut response| {
         println!("request received: {} {}", request.method(), request.uri());
 
@@ -175,14 +176,6 @@ fn main() {
                         post_purchase(body_str);
                         Ok(response.body("post received!".to_owned().into_bytes())?)
                     }
-                    /*
-                    s if s.len() >= 3 && &s[0..3] == "buy" => {
-                        let json = String::from(&s[3..]);
-                        println!("post purchase {}", json);
-                        post_purchase(json);
-                        Ok(response.body("post received!".to_owned().into_bytes())?)
-                    }
-                    */
                     path => {
                         let pages: RwLockReadGuard<HashMap<String, Vec<u8>>> = PAGES.read().unwrap();
                         match pages.get(path) {
@@ -209,5 +202,6 @@ fn main() {
         }
     });
 
+    // listen - this function blocks forever
     server.listen(host, port);
 }

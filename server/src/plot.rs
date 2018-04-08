@@ -34,6 +34,7 @@ pub trait Named {
     fn name(&self) -> &'static str;
 }
 
+// code for demographics
 #[derive(Clone, Serialize, Deserialize, Eq, PartialEq, Debug)]
 pub enum Age {
     UnderThirteen,
@@ -116,6 +117,7 @@ impl Named for Continent {
     }
 }
 
+// struct for a purchase
 #[derive(Clone, Serialize, Deserialize, Eq, PartialEq, Debug)]
 pub struct Purchase {
     pub age: Age,
@@ -139,12 +141,14 @@ pub struct Database {
     path: String
 }
 
+// xy point struct
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct XY {
     x: f64,
     y: f64
 }
 
+// the json format for POSTing a buy
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BuyPost {
     time: u64,
@@ -165,6 +169,7 @@ impl BuyPost {
 
 pub type Response = HashMap<String, HashMap<String, Vec<XY>>>;
 
+// the database struct
 impl Database {
     pub fn new(path: String) -> Database {
         match File::open(&path) {
@@ -339,6 +344,7 @@ impl Database {
     }
 }
 
+// save on drop
 impl Drop for Database {
     fn drop(&mut self) {
         self.save()
