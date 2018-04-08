@@ -65,6 +65,7 @@ fn main() {
         time: Moment::from_dur(time::Duration::days(3))
     });
     println!("{} entries", data.len());
+    println!("response = {:#?}", data.form_response());
 
     /*
     let mut plot = HashMap::new();
