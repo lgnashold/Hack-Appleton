@@ -50,20 +50,21 @@ fn load_pages() -> Result<(), String> {
 }
 
 fn main() {
-    let mut data = Database::new(Path::new("data.json").clone());
+    let mut data = Database::new(String::from("data.json"));
     data.add_point(Purchase {
         age: Age::UnderThirteen,
         gender: Gender::Female,
         continent: Continent::Europe,
         time: Moment::from_dur(time::Duration::days(1))
     });
+    data.clear();
     data.add_point(Purchase {
         age: Age::EighteenToThirty,
         gender: Gender::Other,
         continent: Continent::Asia,
         time: Moment::from_dur(time::Duration::days(3))
     });
-    println!("{}", data.ser());
+    println!("{} entries", data.len());
 
     /*
     let mut plot = HashMap::new();

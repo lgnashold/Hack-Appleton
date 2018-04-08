@@ -67,7 +67,7 @@ pub struct Purchase {
 
 pub struct Database {
     points: Vec<Purchase>,
-    path: Path
+    path: String
 }
 
 pub struct XY {
@@ -78,13 +78,13 @@ pub struct XY {
 pub type Response = HashMap<String, HashMap<String, Vec<XY>>>;
 
 impl Database {
-    pub fn new(path: Path) -> Database {
-        match File::open(path) {
+    pub fn new(path: String) -> Database {
+        match File::open(&path) {
             Ok(mut file) => {
                 let mut contents = String::new();
                 file.read_to_string(&mut contents);
 
-                match serde_json::from_str::<Vec<Purchase>>(contents) {
+                match serde_json::from_str::<Vec<Purchase>>(&contents[..]) {
                     Ok(points) => {
                         println!("read database");
                         Database {
@@ -112,12 +112,9 @@ impl Database {
     }
 
     pub fn save(&self) {
-        match File::create(self.path) {
-            Ok(mut file) => {
-                let str = serde_json::to_string(&self.points).unwrap();
-                file.write_all(str.as_bytes());
-            }
-        }
+        let mut file = File::create(&self.path).expect("save file creation error");
+        let str = serde_json::to_string(&self.points).unwrap();
+        file.write_all(str.as_bytes());
     }
 
     pub fn close(self) {
@@ -132,8 +129,12 @@ impl Database {
         serde_json::to_string(&self.points).unwrap()
     }
 
-    pub fn from_string(str: String) -> Database {
+    pub fn len(&self) -> usize {
+        self.points.len()
+    }
 
+    pub fn clear(&mut self) {
+        self.points.clear()
     }
 }
 
