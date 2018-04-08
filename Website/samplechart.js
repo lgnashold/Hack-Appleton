@@ -10,7 +10,13 @@ var myChart = new Chart(ctx, {
                 ticks: {
                     beginAtZero:true
                 }
-            }]
+            }],
+	    xAxes: [{
+		ticks: {
+		    beginAtZero:true
+		}
+	    }]
+		
         }
     }
 });
