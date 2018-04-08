@@ -14,10 +14,10 @@ public class tester {
 		}
 		
 		// make a text file to send for testing
-		//Dictionary<String, String> data = new HashMap<String, String>();
 		File out;
 		PrintWriter writer;
 		try{
+			// initial way of testing random data point for our graph
 			out = new File("out.txt");
 			writer = new PrintWriter(out);
 			writer.print("[");
@@ -49,6 +49,7 @@ public class tester {
 		out[0] = d.getContinent();
 		out[1] = d.getAge();
 		out[2] = d.getGender();
+		// makes an array of demographics of the user
 		return out;
 	}
 	
