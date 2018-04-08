@@ -40,7 +40,7 @@ fn load_pages() -> Result<(), String> {
 
     match file::get("html/index.html") {
         Ok(page) => pages.insert("/".to_owned(), page),
-        Err(_) => return Err("fail to read index.html".to_owned())
+        Err(err) => return Err(format!("fail to read index.html: {:?}", err))
     };
 
     for entry in WalkDir::new("html") {
@@ -182,6 +182,7 @@ fn main() {
             &Method::POST => {
                 let data = String::from_utf8_lossy(request.body()).into_owned();
                 let body = format!("you posted \"{}\"", data);
+                println!("{}", body);
                 post_purchase(data);
                 Ok(response.body(body.into_bytes())?)
             }
