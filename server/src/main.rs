@@ -1,7 +1,12 @@
-extern crate simple_server;
-extern crate file;
+pub extern crate simple_server;
+pub extern crate file;
 #[macro_use]
-extern crate lazy_static;
+pub extern crate lazy_static;
+pub extern crate serde_json;
+pub extern crate time;
+#[macro_use]
+pub extern crate serde_derive;
+pub extern crate serde;
 
 use simple_server::*;
 
@@ -11,10 +16,16 @@ use std::thread;
 use std::io;
 use std::process;
 use std::fs;
+use std::path::Path;
+
+mod plot;
+use plot::*;
 
 lazy_static! {
     static ref PAGES: RwLock<HashMap<String, Vec<u8>>> = RwLock::new(HashMap::new());
 }
+
+
 
 fn load_pages() -> Result<(), String> {
     let mut pages: RwLockWriteGuard<HashMap<String, Vec<u8>>> = PAGES.write().unwrap();
@@ -39,6 +50,33 @@ fn load_pages() -> Result<(), String> {
 }
 
 fn main() {
+    let mut data = Database::new(String::from("data.json"));
+    data.add_point(Purchase {
+        age: Age::UnderThirteen,
+        gender: Gender::Female,
+        continent: Continent::Europe,
+        time: Moment::from_dur(time::Duration::days(1))
+    });
+    data.clear();
+    data.add_point(Purchase {
+        age: Age::EighteenToThirty,
+        gender: Gender::Other,
+        continent: Continent::Asia,
+        time: Moment::from_dur(time::Duration::days(3))
+    });
+    println!("{} entries", data.len());
+
+    /*
+    let mut plot = HashMap::new();
+    plot.insert("all", vec![(1, 0.4), (4, 0.3), (54, 68.34)]);
+    plot.insert("women", vec![(5, 0.3), (7, 465.1), (4, 84.0)]);
+
+    let s = serde_json::to_string(&plot).unwrap();
+
+    println!("{}", s);
+    */
+
+    /*
     let host = "127.0.0.1";
     let port = "80";
 
@@ -99,4 +137,5 @@ fn main() {
     });
 
     server.listen(host, port);
+    */
 }
