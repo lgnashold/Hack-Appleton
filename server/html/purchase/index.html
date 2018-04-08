@@ -2,10 +2,10 @@
 	<head>
 		<!-- Links to Bootstrap CSS framwork -->
 		 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-  		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> 
+  		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
  		 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
  		 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"crossorigin="anonymous"></script>
- 		 <link rel = "stylesheet" href = "style.css">
+ 		 <link rel = "stylesheet" href = "../style.css">
 		<title> Kohls </title>
 	<head>
 	<body>
@@ -19,7 +19,7 @@
 		        <span class="icon-bar"></span>
 		        <span class="icon-bar"></span>
 		      </button>
-		      <a class="navbar-brand" href="#"><img class = "logo" src = "img/kohlslogo.png"></a>
+		      <a class="navbar-brand" href="#"><img class = "logo" src = "../img/kohlslogo.png"></a>
 		    </div>
 
 		    <!-- Collect the nav links, forms, and other content for toggling -->
@@ -33,7 +33,89 @@
 		</nav>
 	</body>
 	<div class = "col-sm-12">
-		<h1> Welcome to Kohl's Analytics </h1>
-		<p> This webpage will boost Kohl's ability to analyze purchase data. Effective analyisis of data is a crucial aspect of buisness, sales and marketing in the 21st century. </p>
+		<h1> Buy a Product </h1>
+		<form>
+		  <div class="form-group">
+		    <label for="exampleSelect1">Gender</label>
+		    <select class="form-control" id="genderselect">
+		      <option>Male</option>
+		      <option>Female</option>
+		      <option>Other</option>
+		    </select>
+		  </div>
+		  <div class="form-group">
+		    <label for="exampleSelect1">Continent</label>
+		    <select class="form-control" id="continentselect">
+		      <option>North America</option>
+		      <option>South American</option>
+		      <option>Europe</option>
+		      <option>Asia</option>
+		      <option>Africa</option>
+		      <option>Australia</option>
+		      <option>Antarctica</option>
+		    </select>
+		  </div>
+		  <div class="form-group">
+		    <label for="exampleSelect1">Age</label>
+		    <select class="form-control" id="ageselect">
+		      <option>>13</option>
+		      <option>13-18</option>
+		      <option>18-30</option>
+		      <option>30-50</option>
+		      <option>50+</option>
+		    </select>
+		  </div>
+		  <div class="form-group">
+		    <label for="example-number-input" class="col-2 col-form-label">Purchases: </label>
+		      <input class="form-control" type="number" value="42" id="purchases">
+		  </div>
+			<!--
+			pub struct BuyPost {
+			    time: u64,
+			    continent: String,
+			    gender: String,
+			    age: String
+			}
+		-->
+
+			<script>
+
+				console.log("initializing script");
+				function submitPurchase() {
+					console.log("submitting purchase");
+					var gender = document.getElementById("genderselect").value;
+					var continent = document.getElementById("continentselect").value;
+					var age = document.getElementById("ageselect").value;
+					console.log(gender);
+					console.log(continent);
+					console.log(age);
+					var time = Math.round((new Date()).getTime() / 1000);
+					var struct = {
+						"time": time,
+						"gender": gender,
+						"continent": continent,
+						"age": age
+					};
+					var ser = JSON.stringify(struct);
+					console.log(ser);
+					/*
+					var xhr = new XMLHttpRequest();
+					xhr.open("POST", "/purchase", true);
+					xhr.setRequestHeader("Content-Type", "application/json");
+					xhr.send(ser);
+					*/
+
+					fetch("/buy", {
+						method: "POST",
+						body: ser
+					}).then(res => {
+						console.log("request complete!");
+						console.log(res);
+					});
+
+				}
+			</script>
+		  <button type="button" class="btn btn-primary" onclick="submitPurchase()">Submit</button>
+		</form>
 	</div>
 </html>

@@ -40,7 +40,7 @@ fn load_pages() -> Result<(), String> {
 
     match file::get("html/index.html") {
         Ok(page) => pages.insert("/".to_owned(), page),
-        Err(_) => return Err("fail to read index.html".to_owned())
+        Err(err) => return Err(format!("fail to read index.html: {:?}", err))
     };
 
     for entry in WalkDir::new("html") {
@@ -92,6 +92,7 @@ fn get_response() -> String {
 fn post_purchase(post: String) {
     match serde_json::from_str::<BuyPost>(&post[..]) {
         Ok(parsed) => {
+            println!("parsed: {}", parsed);
             let purchase = parsed.into_purchase();
             let mut db: MutexGuard<Database> = DATABASE.lock().unwrap();
             db.add_point(purchase);
@@ -167,6 +168,20 @@ fn main() {
                     "/plots.json" => {
                         Ok(response.body(get_response().into_bytes())?)
                     }
+                    "/buy" => {
+                        let body = request.body();
+                        let body_str = String::frmo_utf8_lossy(body);
+                        post_purchase(body_str);
+                        Ok(response.body("post received!".to_owned().into_bytes())?)
+                    }
+                    /*
+                    s if s.len() >= 3 && &s[0..3] == "buy" => {
+                        let json = String::from(&s[3..]);
+                        println!("post purchase {}", json);
+                        post_purchase(json);
+                        Ok(response.body("post received!".to_owned().into_bytes())?)
+                    }
+                    */
                     path => {
                         let pages: RwLockReadGuard<HashMap<String, Vec<u8>>> = PAGES.read().unwrap();
                         match pages.get(path) {
@@ -182,6 +197,7 @@ fn main() {
             &Method::POST => {
                 let data = String::from_utf8_lossy(request.body()).into_owned();
                 let body = format!("you posted \"{}\"", data);
+                println!("{}", body);
                 post_purchase(data);
                 Ok(response.body(body.into_bytes())?)
             }

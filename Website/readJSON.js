@@ -2,7 +2,8 @@ var JSONobject = JSON.parse('{"Gender":{"Male":[],"Other":[{"x":14.0,"y":3.0},{"
 function getDataset (majorCat, minorCat, color) {
 	return {
 		label: minorCat, data: JSONobject[majorCat][minorCat],
-		fill:false,borderWidth:5,borderColor:color
+		fill:false,borderWidth:5,showLines:false,borderColor:color
+		//tension:0
 	};
 }
 
