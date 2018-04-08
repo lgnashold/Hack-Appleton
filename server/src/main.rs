@@ -57,10 +57,16 @@ fn get_response() -> String {
 }
 
 fn post_purchase(post: String) {
-    let parsed = serde_json::from_str::<BuyPost>(&post[..]);
-    let purchase = parsed.into_purchase();
-    let mut db: MutexGuard<Database> = DATABASE.lock().unwrap();
-    db.add_point(purchase);
+    match serde_json::from_str::<BuyPost>(&post[..]) {
+        Ok(parsed) => {
+            let purchase = parsed.into_purchase();
+            let mut db: MutexGuard<Database> = DATABASE.lock().unwrap();
+            db.add_point(purchase);
+        },
+        Err(err) => {
+            println!("post purchase parse error {:?}", err);
+        }
+    };
 }
 
 use std::fs::File;
@@ -128,6 +134,9 @@ fn main() {
         match request.method() {
             &Method::GET => {
                 match request.uri().path() {
+                    "/plots.json" => {
+                        Ok(response.body(get_response().into_bytes())?)
+                    }
                     path => {
                         let pages: RwLockReadGuard<HashMap<String, Vec<u8>>> = PAGES.read().unwrap();
                         match pages.get(path) {
@@ -143,6 +152,7 @@ fn main() {
             &Method::POST => {
                 let data = String::from_utf8_lossy(request.body()).into_owned();
                 let body = format!("you posted \"{}\"", data);
+                post_purchase(data);
                 Ok(response.body(body.into_bytes())?)
             }
             _ => {
