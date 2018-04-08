@@ -46,8 +46,8 @@
 		  <div class="form-group">
 		    <label for="exampleSelect1">Continent</label>
 		    <select class="form-control" id="continentselect">
-		      <option>North America</option>
-		      <option>South American</option>
+		      <option>NorthAmerica</option>
+		      <option>SouthAmerican</option>
 		      <option>Europe</option>
 		      <option>Asia</option>
 		      <option>Africa</option>
@@ -58,11 +58,11 @@
 		  <div class="form-group">
 		    <label for="exampleSelect1">Age</label>
 		    <select class="form-control" id="ageselect">
-		      <option>>13</option>
-		      <option>13-18</option>
-		      <option>18-30</option>
-		      <option>30-50</option>
-		      <option>50+</option>
+		      <option>UnderThirteen</option>
+		      <option>ThirteenToEighteen</option>
+		      <option>EighteenToFifty</option>
+		      <option>ThirtyToFifty</option>
+		      <option>FiftyAndOlder</option>
 		    </select>
 		  </div>
 		  <div class="form-group">
@@ -92,8 +92,8 @@
 					var time = Math.round((new Date()).getTime() / 1000);
 					var struct = {
 						"time": time,
-						"gender": gender,
 						"continent": continent,
+						"gender": gender,
 						"age": age
 					};
 					var ser = JSON.stringify(struct);

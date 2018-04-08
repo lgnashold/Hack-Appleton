@@ -92,7 +92,7 @@ fn get_response() -> String {
 fn post_purchase(post: String) {
     match serde_json::from_str::<BuyPost>(&post[..]) {
         Ok(parsed) => {
-            println!("parsed: {}", parsed);
+            println!("parsed: {:?}", parsed);
             let purchase = parsed.into_purchase();
             let mut db: MutexGuard<Database> = DATABASE.lock().unwrap();
             db.add_point(purchase);
@@ -170,7 +170,8 @@ fn main() {
                     }
                     "/buy" => {
                         let body = request.body();
-                        let body_str = String::frmo_utf8_lossy(body);
+                        let body_str = String::from(String::from_utf8_lossy(body).trim());
+                        println!("posted str = {}", body_str);
                         post_purchase(body_str);
                         Ok(response.body("post received!".to_owned().into_bytes())?)
                     }
@@ -195,8 +196,8 @@ fn main() {
                 }
             }
             &Method::POST => {
-                let data = String::from_utf8_lossy(request.body()).into_owned();
-                let body = format!("you posted \"{}\"", data);
+                let data = String::from(String::from_utf8(request.body().to_vec()).unwrap().trim());
+                let body = format!("you posted {}", data);
                 println!("{}", body);
                 post_purchase(data);
                 Ok(response.body(body.into_bytes())?)
