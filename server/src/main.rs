@@ -7,8 +7,11 @@ pub extern crate time;
 #[macro_use]
 pub extern crate serde_derive;
 pub extern crate serde;
+pub extern crate walkdir;
 
 use simple_server::*;
+
+use walkdir::WalkDir;
 
 use std::collections::HashMap;
 use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard, Mutex, MutexGuard};
@@ -17,6 +20,9 @@ use std::io;
 use std::process;
 use std::fs;
 use std::path::Path;
+
+use std::fs::File;
+use std::io::prelude::*;
 
 mod plot;
 use plot::*;
@@ -37,6 +43,32 @@ fn load_pages() -> Result<(), String> {
         Err(_) => return Err("fail to read index.html".to_owned())
     };
 
+    for entry in WalkDir::new("html") {
+        let entry = entry.unwrap();
+        if entry.file_type().is_file() {
+            let mut file = File::open(entry.path()).unwrap();
+            let length = file.metadata().unwrap().len() as usize;
+            let data: Vec<u8> = file
+                .bytes()
+                .take(length)
+                .map(|r: Result<u8, _>| r.unwrap())
+                .collect();
+
+            let path = entry.path().clone().to_str().unwrap().clone();
+            let url = String::from(&path[4..]);
+
+            println!("found url {}", url);
+
+            pages.insert(url, data);
+        }
+    }
+
+    /*
+    match file::get("html/index.html") {
+        Ok(page) => pages.insert("/".to_owned(), page),
+        Err(_) => return Err("fail to read index.html".to_owned())
+    };
+
     for path in fs::read_dir("html").unwrap()
         .map(|r| r.unwrap().path()) {
         println!("reading path {:?}", path);
@@ -46,6 +78,7 @@ fn load_pages() -> Result<(), String> {
         let url = format!("/{}", path.file_name().unwrap().to_os_string().into_string().unwrap());
         pages.insert(url, data);
     }
+    */
 
 
     Ok(())
@@ -68,9 +101,6 @@ fn post_purchase(post: String) {
         }
     };
 }
-
-use std::fs::File;
-use std::io::prelude::*;
 
 fn test_felix_parse_respond() {
     let mut file = File::open("felix.json").unwrap();
