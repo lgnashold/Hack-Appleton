@@ -105,14 +105,14 @@
 					xhr.send(ser);
 					*/
 
-					fetch("/purchase", {
+					fetch("/buy", {
 						method: "POST",
 						body: ser
 					}).then(res => {
 						console.log("request complete!");
 						console.log(res);
 					});
-					
+
 				}
 			</script>
 		  <button type="button" class="btn btn-primary" onclick="submitPurchase()">Submit</button>

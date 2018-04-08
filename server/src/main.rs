@@ -92,6 +92,7 @@ fn get_response() -> String {
 fn post_purchase(post: String) {
     match serde_json::from_str::<BuyPost>(&post[..]) {
         Ok(parsed) => {
+            println!("parsed: {}", parsed);
             let purchase = parsed.into_purchase();
             let mut db: MutexGuard<Database> = DATABASE.lock().unwrap();
             db.add_point(purchase);
@@ -167,6 +168,20 @@ fn main() {
                     "/plots.json" => {
                         Ok(response.body(get_response().into_bytes())?)
                     }
+                    "/buy" => {
+                        let body = request.body();
+                        let body_str = String::frmo_utf8_lossy(body);
+                        post_purchase(body_str);
+                        Ok(response.body("post received!".to_owned().into_bytes())?)
+                    }
+                    /*
+                    s if s.len() >= 3 && &s[0..3] == "buy" => {
+                        let json = String::from(&s[3..]);
+                        println!("post purchase {}", json);
+                        post_purchase(json);
+                        Ok(response.body("post received!".to_owned().into_bytes())?)
+                    }
+                    */
                     path => {
                         let pages: RwLockReadGuard<HashMap<String, Vec<u8>>> = PAGES.read().unwrap();
                         match pages.get(path) {
