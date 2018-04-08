@@ -1,0 +1,4 @@
+server/target/
+**/*.rs.bk
+server/target
+server/.idea
