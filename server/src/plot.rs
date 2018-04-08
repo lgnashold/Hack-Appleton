@@ -228,6 +228,74 @@ impl Database {
             outer.insert("Age".to_owned(), ages);
         }
 
+        // build genders
+        {
+            let mut genders: HashMap<String, Vec<XY>> = HashMap::new();
+            for gender in GENDERS {
+                let mut histogram = HashMap::<i64, u64>::new();
+                for point in self.points.iter() {
+                    if &point.gender == gender {
+                        let day = point.time.clone().into_dur().num_days();
+
+                        let insert = {
+                            if let Some(mut i) = histogram.get_mut(&day) {
+                                *i += 1;
+                                false
+                            } else {
+                                true
+                            }
+                        };
+                        if insert {
+                            histogram.insert(day, 1);
+                        }
+                    }
+                }
+                let mut points: Vec<XY> = histogram.iter()
+                    .map(|pair| XY {
+                        x: *pair.0 as f64,
+                        y: *pair.1 as f64
+                    })
+                    .collect();
+                points.sort_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
+                genders.insert(gender.name().to_owned(), points);
+            }
+            outer.insert("Gender".to_owned(), genders);
+        }
+
+        // build continents
+        {
+            let mut continents: HashMap<String, Vec<XY>> = HashMap::new();
+            for continent in CONTINENTS {
+                let mut histogram = HashMap::<i64, u64>::new();
+                for point in self.points.iter() {
+                    if &point.continent == continent {
+                        let day = point.time.clone().into_dur().num_days();
+
+                        let insert = {
+                            if let Some(mut i) = histogram.get_mut(&day) {
+                                *i += 1;
+                                false
+                            } else {
+                                true
+                            }
+                        };
+                        if insert {
+                            histogram.insert(day, 1);
+                        }
+                    }
+                }
+                let mut points: Vec<XY> = histogram.iter()
+                    .map(|pair| XY {
+                        x: *pair.0 as f64,
+                        y: *pair.1 as f64
+                    })
+                    .collect();
+                points.sort_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
+                continents.insert(continent.name().to_owned(), points);
+            }
+            outer.insert("Continent".to_owned(), continents);
+        }
+
         outer
     }
 

@@ -57,7 +57,6 @@ fn main() {
         continent: Continent::Europe,
         time: Moment::from_dur(time::Duration::days(1))
     });
-    data.clear();
     data.add_point(Purchase {
         age: Age::EighteenToThirty,
         gender: Gender::Other,
