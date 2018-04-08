@@ -4,60 +4,41 @@ var myChart;
 setFocus("Gender");
 
 function setFocus(category) {
-    myChart = new Chart(ctx, {
-    type: 'line',
-    data: {  
-        datasets: getAllDatasets(category, getColors(getMinorCategorys(category).length))
-    },
-    options: {
-        responsive: true,
-        title: {
-            display: true,
-            text: 'Chart.js Line Chart'
-        },
-        tooltips: {
-            mode: 'index',
-            intersect: false,
-        },
-        hover: {
-            mode: 'nearest',
-            intersect: true
-        },
-        scales: {
-            xAxes: [{
-                display: true,
-                scaleLabel: {
+    myChart = new Chart(ctx,{type: 'line',
+            data: {
+                datasets: getAllDatasets(category, getColors(getMinorCategorys(category).length))
+            },
+            options: {
+                responsive: true,
+                title: {
                     display: true,
-                    labelString: 'Time'
+                    text: category + " vs time"
                 },
-                ticks: {
-                    beginAtZero: true
+                scales: {
+                    xAxes: [{
+                        type:"linear",
+                        title:"Time",
+                        scaleLabel: {
+                            display: true,
+                            labelString: "Time"
+                        }
+                        
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            min:0
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: "Purchases made by demographic"
+                        }
+                    }]
                 }
-            }],
-            yAxes: [{
-                display: true,
-                scaleLabel: {
-                    display: true,
-                    labelString: 'Purchases'
-                },
-                ticks: {
-                    beginAtZero: true
-                }
-            }],
-	    xAxes: [{
-		ticks: {
-		    beginAtZero:true
-		}
-	    }]
-		
-        }
-    }
-});
-}
+            }
 
+        });
+}
 function getColors(length) {
     console.log(colors.slice(0, length));
     return colors.slice(0, length);
-}
-
-
+} 
