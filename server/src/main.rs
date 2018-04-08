@@ -11,7 +11,7 @@ pub extern crate serde;
 use simple_server::*;
 
 use std::collections::HashMap;
-use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard, Mutex, MutexGuard};
 use std::thread;
 use std::io;
 use std::process;
@@ -25,7 +25,9 @@ lazy_static! {
     static ref PAGES: RwLock<HashMap<String, Vec<u8>>> = RwLock::new(HashMap::new());
 }
 
-
+lazy_static! {
+    static ref DATABASE: Mutex<Database> = Mutex::new(Database::new(String::from("data.json")));
+}
 
 fn load_pages() -> Result<(), String> {
     let mut pages: RwLockWriteGuard<HashMap<String, Vec<u8>>> = PAGES.write().unwrap();
@@ -49,35 +51,58 @@ fn load_pages() -> Result<(), String> {
     Ok(())
 }
 
+fn get_response() -> String {
+    let mut db: MutexGuard<Database> = DATABASE.lock().unwrap();
+    db.form_response_json()
+}
+
+fn post_purchase(post: String) {
+    match serde_json::from_str::<BuyPost>(&post[..]) {
+        Ok(parsed) => {
+            let purchase = parsed.into_purchase();
+            let mut db: MutexGuard<Database> = DATABASE.lock().unwrap();
+            db.add_point(purchase);
+        },
+        Err(err) => {
+            println!("post purchase parse error {:?}", err);
+        }
+    };
+}
+
+use std::fs::File;
+use std::io::prelude::*;
+
+fn test_felix_parse_respond() {
+    let mut file = File::open("felix.json").unwrap();
+    let mut contents = String::new();
+    file.read_to_string(&mut contents);
+    match serde_json::from_str::<Vec<BuyPost>>(&contents[..]) {
+        Ok(posts) => {
+            let purchases = posts.into_iter()
+                .map(|post| post.into_purchase())
+                .collect::<Vec<Purchase>>();
+
+            let mut data = Database::new(String::from("data.json"));
+            data.clear();
+            for purchase in purchases {
+                data.add_point(purchase);
+            }
+
+            let response = data.form_response();
+            data.close();
+            println!("response = {:#?}", response);
+            let json = serde_json::to_string(&response).unwrap();
+            println!("{}", json);
+        },
+        Err(err) => {
+            println!("parse error {:?}", err);
+        }
+    }
+}
+
 fn main() {
-    let mut data = Database::new(String::from("data.json"));
-    data.add_point(Purchase {
-        age: Age::UnderThirteen,
-        gender: Gender::Female,
-        continent: Continent::Europe,
-        time: Moment::from_dur(time::Duration::days(1))
-    });
-    data.add_point(Purchase {
-        age: Age::EighteenToThirty,
-        gender: Gender::Other,
-        continent: Continent::Asia,
-        time: Moment::from_dur(time::Duration::days(3))
-    });
-    println!("{} entries", data.len());
-    println!("response = {:#?}", data.form_response());
-
-    /*
-    let mut plot = HashMap::new();
-    plot.insert("all", vec![(1, 0.4), (4, 0.3), (54, 68.34)]);
-    plot.insert("women", vec![(5, 0.3), (7, 465.1), (4, 84.0)]);
-
-    let s = serde_json::to_string(&plot).unwrap();
-
-    println!("{}", s);
-    */
-
-    /*
-    let host = "127.0.0.1";
+    //let host = "127.0.0.1";
+    let host = "localhost";
     let port = "80";
 
     load_pages().expect("failed to load pages");
@@ -109,7 +134,9 @@ fn main() {
         match request.method() {
             &Method::GET => {
                 match request.uri().path() {
-                    //"/" => Ok(response.body(INDEX.to_owned().into_bytes())?),
+                    "/plots.json" => {
+                        Ok(response.body(get_response().into_bytes())?)
+                    }
                     path => {
                         let pages: RwLockReadGuard<HashMap<String, Vec<u8>>> = PAGES.read().unwrap();
                         match pages.get(path) {
@@ -121,12 +148,11 @@ fn main() {
                         }
                     }
                 }
-                //let body = format!("you requested path \"{}\"", request.uri().path());
-                //Ok(response.body(body.into_bytes())?)
             }
             &Method::POST => {
                 let data = String::from_utf8_lossy(request.body()).into_owned();
                 let body = format!("you posted \"{}\"", data);
+                post_purchase(data);
                 Ok(response.body(body.into_bytes())?)
             }
             _ => {
@@ -137,5 +163,4 @@ fn main() {
     });
 
     server.listen(host, port);
-    */
 }

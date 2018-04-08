@@ -11,7 +11,7 @@ use std::io::prelude::*;
 //type Plot = HashMap<String, Vec<(u64, f64)>>;
 
 // exact mirror of time::Duration
-#[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, Eq, PartialEq, Debug)]
 pub struct Moment {
     secs: i64,
     nanos: i32,
@@ -34,7 +34,7 @@ pub trait Named {
     fn name(&self) -> &'static str;
 }
 
-#[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, Eq, PartialEq, Debug)]
 pub enum Age {
     UnderThirteen,
     ThirteenToEighteen,
@@ -62,7 +62,7 @@ impl Named for Age {
 }
 
 
-#[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, Eq, PartialEq, Debug)]
 pub enum Gender {
     Female,
     Male,
@@ -83,7 +83,7 @@ impl Named for Gender {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, Eq, PartialEq, Debug)]
 pub enum Continent {
     NorthAmerica,
     SouthAmerica,
@@ -116,7 +116,7 @@ impl Named for Continent {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, Eq, PartialEq, Debug)]
 pub struct Purchase {
     pub age: Age,
     pub gender: Gender,
@@ -139,10 +139,28 @@ pub struct Database {
     path: String
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct XY {
     x: f64,
     y: f64
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BuyPost {
+    time: u64,
+    continent: String,
+    gender: String,
+    age: String
+}
+impl BuyPost {
+    pub fn into_purchase(self) -> Purchase {
+        Purchase {
+            age: AGES.iter().find(|a| a.name() == &self.age[..]).unwrap().clone(),
+            gender: GENDERS.iter().find(|g| g.name() == &self.gender[..]).unwrap().clone(),
+            continent: CONTINENTS.iter().find(|c| c.name() == &self.continent[..]).unwrap().clone(),
+            time: Moment::from_dur(Duration::milliseconds(self.time as i64))
+        }
+    }
 }
 
 pub type Response = HashMap<String, HashMap<String, Vec<XY>>>;
@@ -297,6 +315,11 @@ impl Database {
         }
 
         outer
+    }
+
+    pub fn form_response_json(&self) -> String {
+        let response = self.form_response();
+        serde_json::to_string(&response).unwrap()
     }
 
     pub fn add_point(&mut self, point: Purchase) {
